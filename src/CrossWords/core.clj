@@ -1,10 +1,12 @@
 (ns CrossWords.core
   (:gen-class)
   (:refer-clojure) 
-  (:refer clojure.set :only (intersection))
-  (:require [clojure.contrib.combinatorics :as comb])
-  (:use [clojure.contrib.math :only (abs)])
-  (:require [clojure.contrib.string :as s]))
+  (:use 
+    [clojure.set :only [intersection]]
+    [clojure.math.numeric-tower :only [abs]])
+  (:require 
+    [clojure.math.combinatorics :as comb]
+    [clojure.string :as s]))
 
 (defn crossable? 
   [str1 str2]
@@ -153,6 +155,6 @@
 
 
 (defn -main [& str-input]
-  (if (nil? str-input)
-    (mainfun "Matthew adores shmoopy")
-    (mainfun (s/trim (s/join " " str-input)))))
+  (if (seq str-input)
+    (mainfun (s/trim (s/join " " str-input)))
+    (println "Please enter a sentence")))
