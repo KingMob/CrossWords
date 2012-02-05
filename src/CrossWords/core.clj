@@ -10,41 +10,32 @@
 
 (defn crossable? 
   [str1 str2]
-  ;(println str1)
-  ;(println str2)
-  (if (empty? (intersection (set (.toUpperCase str1)) (set (.toUpperCase str2))))
-    false
-    true))
+  (not (empty? (intersection (set (.toLowerCase str1)) (set (.toLowerCase str2))))))
 
 (defn char-indices 
   [str chr]
-  (let
+  (loop
     [results #{}
-    start-from 0
-    char-indices-1 (fn [results start-from]
-      (let
-        [idx (.indexOf (.toLowerCase str) (int chr) start-from)]
-			  (if (= idx -1)
-			    results
-			    (recur (conj results idx) (+ 1 idx)))))]
-    (char-indices-1 results start-from)))
+    start-from 0]
+    (let [idx (.indexOf (.toLowerCase str) (int chr) start-from)]
+      (if (= idx -1)
+        results
+        (recur (conj results idx) (+ 1 idx))))))
 
 (defn pairs 
   ([s] (pairs (first s) (second s)))
-  ([s1 s2]
-    (for [curr-s1 s1 curr-s2 s2]
-      [curr-s1 curr-s2])))
+  ([s1 s2] (interleave s1 s2)))
 
 (defn join-sets 
   [str1 str2]
   (let
     [common-letters (intersection (set (.toLowerCase str1)) (set (.toLowerCase str2)))]
     (for [chr common-letters] [(char-indices str1 chr) (char-indices str2 chr)])))
-    ;(for [chr common-letters] [(vec (char-indices str1 chr)) (vec (char-indices str2 chr))])))
 
 (defn valid-cross-seq? 
+  "Ensure that every crossable position in a given cross-sequence is at least one letter away from the previous word, so they don't abut"
   [cseq]
-    (every? true? (map #(> ((nth % 1) 0) (+ ((nth % 0) 1) 1)) (partition 2 1 cseq))))
+  (every? true? (map #(> ((nth % 1) 0) (+ ((nth % 0) 1) 1)) (partition 2 1 cseq))))
 
 (defn end-point 
   [x y word-length direction]
@@ -126,10 +117,9 @@
   
 (defn print-cross-words
   [clist words]
-  (let 
-    [puzzle (gen-puzzle clist words)
-     transp-puzzle (apply map vector puzzle)
-     str-puzzle (map #(apply str %) transp-puzzle)]
+  (let [puzzle (gen-puzzle clist words)
+        transp-puzzle (apply map vector puzzle)
+        str-puzzle (map #(apply str %) transp-puzzle)]
     (doall (map #(printf "%s\n" %) str-puzzle))
     (println)))
 
