@@ -1,18 +1,19 @@
 (ns CrossWords.test.core
-  (:use [CrossWords.core])
-  (:use [clojure.test])
-  (:use midje.sweet))
+  ;; (:use midje.sweet)
+  (:require
+   [midje.sweet :refer :all]
+   [CrossWords.core :refer :all]))
 
 ;(deftest replace-me ;; FIXME: write
 ;  (is false "No tests have been written."))
 
-(facts 
+(facts
 	(crossable? "Foo" "Bar") => falsey
 	(crossable? "Foo" "Boo") => truthy)
 
 (fact (char-indices "Test" \t) => #{0 3})
 
-(facts "Pairing" 
+(facts "Pairing"
 	(pairs [:a :b :c] [1 2 3]) => [:a 1 :b 2 :c 3])
 
 (facts "Join sets"

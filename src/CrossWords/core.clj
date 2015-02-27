@@ -1,18 +1,18 @@
 (ns CrossWords.core
   (:gen-class)
-  (:refer-clojure) 
-  (:use 
+  ;; (:refer-clojure)
+  (:use
     [clojure.set :only [intersection]]
     [clojure.math.numeric-tower :only [abs]])
-  (:require 
+  (:require
     [clojure.math.combinatorics :as comb]
     [clojure.string :as s]))
 
-(defn crossable? 
+(defn crossable?
   [str1 str2]
   (not (empty? (intersection (set (.toLowerCase str1)) (set (.toLowerCase str2))))))
 
-(defn char-indices 
+(defn char-indices
   [str chr]
   (loop
     [results #{}
@@ -22,41 +22,44 @@
         results
         (recur (conj results idx) (+ 1 idx))))))
 
-(defn pairs 
+(defn pairs
   ([s] (pairs (first s) (second s)))
-  ([s1 s2] (interleave s1 s2)))
+  ([s1 s2] (vec (for [x s1 y s2] [x y]))))
 
-(defn join-sets 
+(defn join-sets
   [str1 str2]
   (let
     [common-letters (intersection (set (.toLowerCase str1)) (set (.toLowerCase str2)))]
     (for [chr common-letters] [(char-indices str1 chr) (char-indices str2 chr)])))
 
-(defn valid-cross-seq? 
+(defn valid-cross-seq?
   "Ensure that every crossable position in a given cross-sequence is at least one letter away from the previous word, so they don't abut"
   [cseq]
-  (every? true? (map #(> ((nth % 1) 0) (+ ((nth % 0) 1) 1)) (partition 2 1 cseq))))
+  ;; (println cseq)
+  (every? true? (map
+                 #(> ((nth % 1) 0) (+ ((nth % 0) 1) 1))
+                 (partition 2 1 cseq))))
 
-(defn end-point 
+(defn end-point
   [x y word-length direction]
   (cond
     (= direction :horiz) [(dec (+ x word-length)) y]
     (= direction :vert) [x (dec (+ y word-length))]))
 
-(defn new-start-point 
+(defn new-start-point
   [initx inity word-length old-direction join-pair]
   (cond
     (= old-direction :vert) [(- initx (join-pair 1)) (+ inity (join-pair 0))]
     (= old-direction :horiz) [(+ initx (join-pair 0)) (- inity (join-pair 1))]))
 
-(defn coord-range 
+(defn coord-range
   ([cseq words] (coord-range cseq words 0 0 :horiz))
   ([cseq words initx inity direction]
     (let [word-length (count (first words))]
       (cons
         [[initx inity] (end-point initx inity word-length direction)]
         (when (seq cseq)
-          (let 
+          (let
             [opp-dir #(if (= % :horiz) :vert :horiz)
              [newx newy] (new-start-point initx inity word-length direction (first cseq))]
             (coord-range (next cseq) (next words) newx newy (opp-dir direction))))))))
@@ -64,7 +67,7 @@
 (defn coord-list
   [cseq words]
   (let [coord-rg (coord-range cseq words)
-        word-coords 
+        word-coords
         (fn [[[stx sty] [enx eny]]]
           (for [x (range stx (inc enx)) y (range sty (inc eny))] [x y]))]
     (map word-coords coord-rg)))
@@ -72,15 +75,15 @@
 (defn valid-coord-list?
   [clist]
   (let [coords (reduce concat clist)]
-    (= (count coords) (+ (dec (count clist)) (count (set coords)))))) 
-            
-(defn min-coord 
+    (= (count coords) (+ (dec (count clist)) (count (set coords))))))
+
+(defn min-coord
   [dim clist]
   (case dim
     :x (apply min (take-nth 2 (flatten clist)))
     :y (apply min (take-nth 2 (next (flatten clist))))))
 
-(defn max-coord 
+(defn max-coord
   [dim clist]
   (case dim
     :x (apply max (take-nth 2 (flatten clist)))
@@ -100,13 +103,13 @@
   (if (seq word-clist)
     (assoc-in (write-word puzzle (next word-clist) (next word)) (first word-clist) (first word))
     puzzle))
-    
+
 (defn write-words
   [puzzle clist words]
   (if (seq clist)
     (write-word (write-words puzzle (next clist) (next words)) (first clist) (first words))
     puzzle))
-    
+
 (defn gen-puzzle
   [clist words]
   (let [maxx (max-coord :x clist)
@@ -114,7 +117,7 @@
         puzzle (vec (repeat (inc maxx) (vec (repeat (inc maxy) \space))))]
     (write-words puzzle clist words)))
 
-  
+
 (defn print-cross-words
   [clist words]
   (let [puzzle (gen-puzzle clist words)
@@ -126,10 +129,11 @@
 (defn mainfun [str-input]
   ;(def str-input "Cross slow words")
   ;(println str-input)
-  
+
   (let [words (vec (.split str-input " "))
-        sentence-crossable (and (> (count words) 1) (every? true? (map crossable? (drop-last words) (rest words))))]
-    
+        sentence-crossable (and (> (count words) 1)
+                                (every? true? (map crossable? (drop-last words) (rest words))))]
+
     (if (not sentence-crossable)
       (do
         (printf "The sentence \"%s\" cannot be turned into a crossword.\n" str-input)
@@ -139,7 +143,7 @@
         (let [all-join-sets (map join-sets (drop-last words) (rest words))
               all-join-pairs (map #(vec (mapcat pairs %)) all-join-sets)
               cross-seqs (filter valid-cross-seq? (apply comb/cartesian-product all-join-pairs))
-              coord-lists (map normalize-coord-list (filter valid-coord-list? 
+              coord-lists (map normalize-coord-list (filter valid-coord-list?
                                                             (map coord-list cross-seqs (repeat (count cross-seqs) words))))]
           (doall (map #(print-cross-words % words) coord-lists)))))))
 

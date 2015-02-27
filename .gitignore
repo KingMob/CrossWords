@@ -1,0 +1,12 @@
+.cake
+pom.xml
+*.jar
+*.war
+lib
+classes
+build
+/CrossWords
+*~
+.lein*
+.DS_Store
+target/

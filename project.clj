@@ -1,9 +1,14 @@
-(defproject CrossWords "0.1.0-SNAPSHOT"
-	:description "A wonderful little program to turn sentences into crosswords"
-	:dependencies [[org.clojure/clojure "1.3.0"]
-		[org.clojure/math.numeric-tower "0.0.1"]
-		[org.clojure/math.combinatorics "0.0.2"]
-		;[org.clojure/clojure.set "1.3.0"]]
-		[org.clojars.automata/rosado.processing "1.1.0"]]
-  :dev-dependencies [[midje "1.3.1"]]
+(defproject CrossWords "0.2.0"
+  :description "A wonderful little program to turn sentences into crosswords"
+  :url "https://www.github.com/KingMob/CrossWords"
+
+  :dependencies [[org.clojure/clojure "1.6.0"]
+                 [org.clojure/math.numeric-tower "0.0.4"]
+                 [org.clojure/math.combinatorics "0.0.8"]]
+  :profiles {
+            :dev {
+                  :dependencies [[midje "1.6.3" :exclusions [org.clojure/clojure]]]
+                  :plugins [[lein-midje "3.1.3"]]}
+            :uberjar {:aot :all}}
+
   :main CrossWords.core)
