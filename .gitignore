@@ -10,3 +10,4 @@ build
 .lein*
 .DS_Store
 target/
+.\#*
